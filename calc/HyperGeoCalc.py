@@ -24,11 +24,33 @@ class HyperGeoCalc:
             cards += 1
         return cumulative_probability
 
+    def get_mono_color_casting_probability(self, colored_cost, colorless_cost, colored_lands, other_lands, sample_size,
+                                           successes_in_library=4, library_size=60):
+        other_cards = library_size - successes_in_library - colored_lands - other_lands
+        cum = 0
+        for successes_drawn in range(1, successes_in_library + 1):
+            for other_cards_drawn in range(sample_size - successes_drawn - colored_cost - colorless_cost + 1):
+                for colored_lands_drawn in range(colored_cost, sample_size - successes_drawn - other_cards_drawn + 1):
+                    other_lands_drawn = sample_size - successes_drawn - other_cards_drawn - colored_lands_drawn
+                    if successes_drawn + other_cards_drawn + colored_lands_drawn + other_lands_drawn != sample_size:
+                        print("error")
+                    print(successes_drawn, colored_lands_drawn, other_lands_drawn, other_cards_drawn)
+                    a = comb(successes_in_library, successes_drawn, exact=True)
+                    b = comb(colored_lands, colored_lands_drawn, exact=True)
+                    c = comb(other_lands, other_lands_drawn, exact=True)
+                    d = comb(other_cards, other_cards_drawn, exact=True)
+                    cum += a * b * c * d
+        probability_both = cum / comb(library_size, sample_size, exact=True)
+        probability_drawn = self.calc_cum(sample_size=10)
+        return probability_both/probability_drawn
+
 
 if __name__ == "__main__":
     hgc = HyperGeoCalc()
     print(hgc.calc())
     print(hgc.calc_cum())
+    print(hgc.get_mono_color_casting_probability(colored_cost=2, colorless_cost=1,
+                                                 colored_lands=18, other_lands=8, sample_size=10))
 
 #likelihood you can cast card x by turn y
 #do you have the lands?
